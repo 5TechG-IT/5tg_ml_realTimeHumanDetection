@@ -6,13 +6,15 @@ import tensorflow as tf
 from yolov3.utils import Load_Yolo_model, image_preprocess, postprocess_boxes, nms, draw_bbox, read_class_names
 from yolov3.configs import *
 import time
+import imutils
 
 from deep_sort import nn_matching
 from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker
 from deep_sort import generate_detections as gdet
 
-video_path   = "./IMAGES/test.mp4"
+video_path   = ""
+#video_path   = ""
 
 def Object_tracking(Yolo, video_path, output_path, input_size=416, show=False, CLASSES=YOLO_COCO_CLASSES, score_threshold=0.3, iou_threshold=0.45, rectangle_colors='', Track_only = []):
     # Definition of the parameters
@@ -46,6 +48,7 @@ def Object_tracking(Yolo, video_path, output_path, input_size=416, show=False, C
         _, frame = vid.read()
 
         try:
+            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
             original_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             original_frame = cv2.cvtColor(original_frame, cv2.COLOR_BGR2RGB)
         except:
@@ -91,6 +94,7 @@ def Object_tracking(Yolo, video_path, output_path, input_size=416, show=False, C
         features = np.array(encoder(original_frame, boxes))
         detections = [Detection(bbox, score, class_name, feature) for bbox, score, class_name, feature in zip(boxes, scores, names, features)]
 
+
         # Pass detections to the deepsort object and obtain the track information.
         tracker.predict()
         tracker.update(detections)
@@ -107,7 +111,7 @@ def Object_tracking(Yolo, video_path, output_path, input_size=416, show=False, C
             tracked_bboxes.append(bbox.tolist() + [tracking_id, index]) # Structure data, that we could use it with our draw_bbox function
 
         # draw detection on frame
-        image = draw_bbox(original_frame, tracked_bboxes, CLASSES=CLASSES, tracking=True)
+        image = draw_bbox(original_frame, tracked_bboxes, CLASSES=CLASSES, rectangle_colors=(0,255,255,0), tracking=True)
 
         t3 = time.time()
         times.append(t2-t1)
@@ -120,12 +124,12 @@ def Object_tracking(Yolo, video_path, output_path, input_size=416, show=False, C
         fps = 1000 / ms
         fps2 = 1000 / (sum(times_2)/len(times_2)*1000)
         
-        image = cv2.putText(image, "Time: {:.1f} FPS".format(fps), (0, 30), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
+        image = cv2.putText(image, "Time: {:.1f} FPS".format(fps), (0, 30), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 2)
 
         # draw original yolo detection
         #image = draw_bbox(image, bboxes, CLASSES=CLASSES, show_label=False, rectangle_colors=rectangle_colors, tracking=True)
 
-        print("Time: {:.2f}ms, Detection FPS: {:.1f}, total FPS: {:.1f}".format(ms, fps, fps2))
+        #print("Time:: {:.2f}ms, Detection FPS: {:.1f}, total FPS: {:.1f}".format(ms, fps, fps2))
         if output_path != '': out.write(image)
         if show:
             cv2.imshow('output', image)
@@ -138,4 +142,4 @@ def Object_tracking(Yolo, video_path, output_path, input_size=416, show=False, C
 
 
 yolo = Load_Yolo_model()
-Object_tracking(yolo, video_path, "detection.mp4", input_size=YOLO_INPUT_SIZE, show=True, iou_threshold=0.1, rectangle_colors=(255,0,0), Track_only = ["person"])
+Object_tracking(yolo, video_path, "detection.mp4", input_size=YOLO_INPUT_SIZE, show=True, iou_threshold=0.1, rectangle_colors=(0,255,0), Track_only = ["person"])
