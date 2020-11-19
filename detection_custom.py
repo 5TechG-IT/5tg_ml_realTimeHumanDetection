@@ -1,13 +1,3 @@
-#================================================================
-#
-#   File name   : detection_custom.py
-#   Author      : PyLessons
-#   Created date: 2020-09-17
-#   Website     : https://pylessons.com/
-#   GitHub      : https://github.com/pythonlessons/TensorFlow-2.x-YOLOv3
-#   Description : object detection image and video example
-#
-#================================================================
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import cv2

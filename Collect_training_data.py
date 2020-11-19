@@ -1,13 +1,3 @@
-#================================================================
-#
-#   File name   : Collect_training_data.py
-#   Author      : PyLessons
-#   Created date: 2020-09-27
-#   Website     : https://pylessons.com/
-#   GitHub      : https://github.com/pythonlessons/TensorFlow-2.x-YOLOv3
-#   Description : YOLO detection to XML example script
-#
-#================================================================
 import os
 import subprocess
 import time

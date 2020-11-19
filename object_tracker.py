@@ -1,14 +1,3 @@
-#================================================================
-#
-#   File name   : object_tracker.py
-#   Author      : PyLessons
-#   Created date: 2020-09-17
-#   Website     : https://pylessons.com/
-#   GitHub      : https://github.com/pythonlessons/TensorFlow-2.x-YOLOv3
-#   Description : code to track detected object from video or webcam
-#
-#================================================================
-import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import cv2
 import numpy as np
