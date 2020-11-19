@@ -111,6 +111,37 @@ def image_preprocess(image, target_size, gt_boxes=None):
         gt_boxes[:, [1, 3]] = gt_boxes[:, [1, 3]] * scale + dh
         return image_paded, gt_boxes
 
+#author: Akshay
+class point:
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        
+def directionOfPoint(A, B, P):
+	# Subtracting co-ordinates of 
+	# point A from B and P, to 
+	# make A as origin
+    B.x -= A.x
+    B.y -= A.y
+    P.x -= A.x
+    P.y -= A.y
+
+	# Determining cross Product
+    cross_product = B.x * P.y - B.y * P.x
+
+	# Return RIGHT if cross product is positive
+    if(cross_product > 0):
+        return 1
+		
+	# Return LEFT if cross product is negative
+    if(cross_product < 0):
+        return -1
+
+	# Return ZERO if cross product is zero
+    return 0
 
 def draw_bbox(image, bboxes, CLASSES=YOLO_COCO_CLASSES, show_label=True, show_confidence = True, Text_colors=(255,255,0), rectangle_colors='', tracking=False):   
     NUM_CLASS = read_class_names(CLASSES)
@@ -124,17 +155,33 @@ def draw_bbox(image, bboxes, CLASSES=YOLO_COCO_CLASSES, show_label=True, show_co
     random.seed(0)
     random.shuffle(colors)
     random.seed(None)
-
+    
     for i, bbox in enumerate(bboxes):
         coor = np.array(bbox[:4], dtype=np.int32)
         score = bbox[4]
         class_ind = int(bbox[5])
-        bbox_color = rectangle_colors if rectangle_colors != '' else colors[class_ind]
+        
         bbox_thick = int(0.6 * (image_h + image_w) / 1000)
         if bbox_thick < 1: bbox_thick = 1
         fontScale = 0.75 * bbox_thick
         (x1, y1), (x2, y2) = (coor[0], coor[1]), (coor[2], coor[3])
 
+        #change bbox color according to object direction
+        direction = directionOfPoint(point(637, 641), point(299, 27), point(x1+(x2-x1)//2, y1+(y2-y1)//2))
+        print("point: " + str(x1+(x2-x1)//2) + "," + str(y1+(y2-y1)//2) + " direction:" + str(direction) + "continuty: " + str(continuty))
+       
+        #if(x1 < 230):
+        #    bbox_color = (0,0,255)
+        #    cv2.putText(image, "Intruder detected", (0, 100), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
+        #elif(x1 < 360):
+        #    bbox_color = rectangle_colors if rectangle_colors != '' else colors[class_ind]
+        
+        if direction <= 0:
+            bbox_color = (0,0,255)
+        else:
+            continuty = 0
+            bbox_color = (0,0,0)
+            
         # put object rectangle
         cv2.rectangle(image, (x1, y1), (x2, y2), bbox_color, bbox_thick*2)
 
@@ -144,8 +191,8 @@ def draw_bbox(image, bboxes, CLASSES=YOLO_COCO_CLASSES, show_label=True, show_co
 
             if tracking: score_str = " "+str(score)
 
-            label = "{}".format(NUM_CLASS[class_ind]) + score_str
-
+            # label = "{}".format(NUM_CLASS[class_ind]) + score_str
+            label = "xy: " + str(x1) + "," + str(y1) + "," + str(x2) + "," + str(y2)  
             # get text size
             (text_width, text_height), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_COMPLEX_SMALL,
                                                                   fontScale, thickness=bbox_thick)
@@ -473,7 +520,7 @@ def detect_video(Yolo, video_path, output_path, input_size=416, show=False, CLAS
         image = cv2.putText(image, "Time: {:.1f}FPS".format(fps), (0, 30), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
         # CreateXMLfile("XML_Detections", str(int(time.time())), original_image, bboxes, read_class_names(CLASSES))
         
-        print("Time: {:.2f}ms, Detection FPS: {:.1f}, total FPS: {:.1f}".format(ms, fps, fps2))
+        #print("Time: {:.2f}ms, Detection FPS: {:.1f}, total FPS: {:.1f}".format(ms, fps, fps2))
         if output_path != '': out.write(image)
         if show:
             cv2.imshow('output', image)
